@@ -28,7 +28,7 @@ import { openScreen, replaceScreen, useApp } from './app-state';
 import { formatPaise, MAX_QUANTITY, type StockUnit } from './domain';
 import { analyzeHomeNote, classifyHomeCapture, MAX_HOME_NOTE_LENGTH, resolveHomeCreditCapture, toHomeNoteBatchInput } from './home-capture';
 import { updateHomeNoteDraft } from './home-note-draft';
-import { homeActionLayout, type ActionMenuPoint } from './home-action-layout';
+import { ACTION_MENU_MAX_FONT_SCALE, homeActionLayout, type ActionMenuPoint } from './home-action-layout';
 import { equivalentProductBarcodes, lookupBarcodeProduct, normalizeBarcode, type BarcodeProductSuggestion } from './product-lookup';
 import { recognizeInvoiceImage } from '../modules/invoice-ocr/src';
 import { extractProductPhotoSuggestions } from './product-photo-extraction';
@@ -1547,9 +1547,9 @@ function HomeActionOption({ icon, label, id, onPress, index, origin, target, wid
   return (
     <Reanimated.View style={[local.actionMenuPosition, { left: target.x - width / 2, top: target.y - height / 2, width, minHeight: height }, motion]}>
       <Pressable accessibilityRole="button" accessibilityLabel={label} testID={id} onPress={onPress}
-        style={({ pressed }) => [local.actionMenuOption, compact && local.actionMenuOptionCompact, pressed && local.actionMenuOptionPressed]}>
+        style={({ pressed }) => [local.actionMenuOption, compact && [local.actionMenuOptionCompact, { minHeight: height }], pressed && local.actionMenuOptionPressed]}>
         <View style={local.actionMenuOptionGlyph}><Icon name={icon} size={22} color={colors.action} /></View>
-        <Text style={[local.actionMenuOptionText, compact && local.actionMenuOptionTextCompact]}>{label}</Text>
+        <Text maxFontSizeMultiplier={ACTION_MENU_MAX_FONT_SCALE} style={[local.actionMenuOptionText, compact && local.actionMenuOptionTextCompact]}>{label}</Text>
       </Pressable>
     </Reanimated.View>
   );

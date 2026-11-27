@@ -173,7 +173,7 @@ export function Brand({ dark = false, spinMark = false }: { dark?: boolean; spin
       ) : (
         <Image accessible={false} source={mark} style={{ width: 27, height: 27 }} />
       )}
-      <Reanimated.Text style={[styles.brandText, dark && { color: colors.sheet }, dark && wordStyle]}>DukaanFlow</Reanimated.Text>
+      <Reanimated.Text maxFontSizeMultiplier={1.5} style={[styles.brandText, dark && { color: colors.sheet }, dark && wordStyle]}>DukaanFlow</Reanimated.Text>
     </View>
   );
 }

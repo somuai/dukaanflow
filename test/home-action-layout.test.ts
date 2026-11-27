@@ -15,7 +15,7 @@ test('regular iPhones fan three independent targets upward from the lower-right 
 });
 
 test('compact phones and large text show distinct full width action rows', () => {
-  for (const [width, fontScale] of [[320, 1], [390, 2]]) {
+  for (const [width, fontScale] of [[320, 1], [390, 2], [402, 4]]) {
     const layout = homeActionLayout({ x: width - 48, y: 520 }, width, 48, fontScale);
     assert.equal(layout.compact, true);
     for (const [index, point] of layout.points.entries()) {
