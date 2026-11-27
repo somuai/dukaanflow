@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "DukaanFlow",
+    "slug": "dukaanflow",
+    "scheme": "dukaanflow",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "ios": {
+      "bundleIdentifier": "com.dukaanflow.prototype",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "DukaanFlow uses the camera to scan product barcodes and supplier invoices."
+      }
+    },
+    "android": {
+      "package": "com.dukaanflow.prototype"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "DukaanFlow uses the camera to scan product barcodes and supplier invoices.",
+          "microphonePermission": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "DukaanFlow lets you attach a reference photo of a product package to your catalogue.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "ios": {
+            "backgroundColor": "#191816",
+            "image": "./assets/dukaanflow-mark.png"
+          },
+          "imageWidth": 64,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-font",
+      "./plugins/with-ios-scene-lifecycle",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
+        }
+    ],
+    "./plugins/with-ios-deployment-target",
+    "./plugins/with-ios-release-info"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "icon": "./assets/app-icon.png"
+  }
+}

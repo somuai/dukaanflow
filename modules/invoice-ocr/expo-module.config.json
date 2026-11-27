@@ -1,0 +1,7 @@
+{
+  "platforms": ["ios"],
+  "apple": {
+    "modules": ["InvoiceOCRModule"],
+    "podspecPath": "ios/InvoiceOCR.podspec"
+  }
+}
