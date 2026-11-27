@@ -12,7 +12,7 @@ docker compose up --build --wait
 
 Open [http://localhost:8080](http://localhost:8080) in a browser. Set up a test shop, choose **Continue with typing**, and submit `Raju ने ₹100 उधार लिया है, रविवार तक चुका देगा।` from Home. Open **Customers → Raju** to see the ₹100 balance and promise. Run `docker compose down` to stop the preview. The first build downloads the container images and npm dependencies.
 
-Docker serves the Expo web export. The recorded demo shows Wispr Flow keyboard dictation on an iPhone. The iOS camera, OCR, and Files features require the custom native build described below.
+Docker serves the Expo web export on this computer's loopback interface. For Wispr Flow keyboard dictation and the iOS camera, OCR, and Files features, use the custom native build described below.
 
 ## Run on a Mac
 

@@ -1,6 +1,35 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { resolveSavedInvoicePage, resolveSavedProductPhoto } from '../src/invoice-evidence.ts';
+import { discardUncommittedScan, resolveSavedInvoicePage, resolveSavedProductPhoto } from '../src/invoice-evidence.ts';
+
+test('leaving during a delivery save keeps the scan if the receipt commits', async () => {
+  let commit: () => void = () => assert.fail('Save has not begun');
+  let committed = false;
+  const saving = new Promise<void>((resolve) => {
+    commit = () => {
+      committed = true;
+      resolve();
+    };
+  });
+  const cleanup = discardUncommittedScan(saving, () => committed, async () => {
+    assert.fail('The saved receipt still references these pages');
+  });
+  await Promise.resolve();
+  commit();
+  await cleanup;
+});
+
+test('leaving during a failed delivery save discards only after the write settles', async () => {
+  let finishSave: () => void = () => assert.fail('Save has not begun');
+  let removed = false;
+  const saving = new Promise<void>((resolve) => { finishSave = resolve; });
+  const cleanup = discardUncommittedScan(saving, () => false, async () => { removed = true; });
+  await Promise.resolve();
+  assert.equal(removed, false);
+  finishSave();
+  await cleanup;
+  assert.equal(removed, true);
+});
 
 const page = 'invoice-scans/6F9619FF-8B86-D011-B42D-00C04FC964FF/page-2.jpg';
 const documents = 'file:///new-container/Documents/';

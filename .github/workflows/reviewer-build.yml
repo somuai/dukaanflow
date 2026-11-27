@@ -1,0 +1,35 @@
+name: Reviewer build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Boot the keyless reviewer build
+        run: |
+          docker compose up --build --wait --wait-timeout 90
+          curl --fail --silent --show-error -D headers.txt http://127.0.0.1:8080/ -o index.html
+          grep -qi '^Cross-Origin-Opener-Policy: same-origin' headers.txt
+          grep -qi '^Cross-Origin-Embedder-Policy: credentialless' headers.txt
+          grep -q '/_expo/static/js/web/' index.html
+      - name: Stop the preview
+        if: always()
+        run: docker compose down

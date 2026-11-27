@@ -644,12 +644,12 @@ function useAppModel() {
     return requested;
   }
 
-  function saveDelivery(next: DeliveryReconciliationInput, evidenceUris: string[] = [], onPersisted?: () => void) {
+  async function saveDelivery(next: DeliveryReconciliationInput, evidenceUris: string[] = [], onPersisted?: () => void) {
     const activeMode = mode;
     if (!activeMode) return;
     const id = operationId.current ?? newOperationId();
     operationId.current = id;
-    void run(async () => {
+    await run(async () => {
       const delivery = await confirmDeliveryReconciliation(activeMode, id, { ...next, invoiceEvidenceUris: evidenceUris });
       onPersisted?.();
       setStockLevels(await listStockLevels(activeMode));

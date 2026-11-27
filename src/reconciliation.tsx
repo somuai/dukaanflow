@@ -3,7 +3,7 @@ import { Image, Keyboard, Platform, StyleSheet, Text, View, useWindowDimensions 
 import { router, useFocusEffect } from 'expo-router';
 import * as Device from 'expo-device';
 import { extractInvoice, joinInvoiceOCRBlocks, type ExtractedInvoice, type ExtractedInvoiceLine } from './invoice-domain';
-import { resolveSavedInvoicePage } from './invoice-evidence';
+import { discardUncommittedScan, resolveSavedInvoicePage } from './invoice-evidence';
 import { openScreen, useApp } from './app-state';
 import { MAX_QUANTITY, formatPaise, parseRupees } from './domain';
 import {
@@ -62,22 +62,28 @@ export function Reconciliation() {
   const [choosingLineId, setChoosingLineId] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const mounted = useRef(true);
-  const activeScanId = useRef<string | null>(null);
-  const committedScan = useRef(false);
+  const activeScan = useRef<{ id: string; committed: boolean } | null>(null);
+  const deliverySave = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
-      const scanId = activeScanId.current;
-      if (scanId && !committedScan.current) void deleteInvoiceScan(scanId).catch(() => {});
+      const scan = activeScan.current;
+      if (scan) {
+        void discardUncommittedScan(
+          deliverySave.current,
+          () => scan.committed,
+          async () => { await deleteInvoiceScan(scan.id); },
+        ).catch(() => {});
+      }
     };
   }, []);
 
   async function discardScan(scanId: string, showFailure: boolean) {
     try {
       await deleteInvoiceScan(scanId);
-      if (activeScanId.current === scanId) activeScanId.current = null;
+      if (activeScan.current?.id === scanId) activeScan.current = null;
       return true;
     } catch {
       if (showFailure && mounted.current) setLocalError(t('The temporary invoice scan could not be removed from this device.', 'इस डिवाइस से अस्थायी बिल स्कैन हटाया नहीं जा सका।'));
@@ -134,8 +140,7 @@ export function Reconciliation() {
       return false;
     }
     if (scanId) {
-      activeScanId.current = scanId;
-      committedScan.current = false;
+      activeScan.current = { id: scanId, committed: false };
     }
     setInvoice(nextInvoice);
     setFields(invoiceFields(nextInvoice));
@@ -161,6 +166,7 @@ export function Reconciliation() {
   }
 
   async function scan() {
+    if (deliverySave.current) return;
     if (Platform.OS === 'ios' && !Device.isDevice) {
       setLocalError(t('The document camera is unavailable in the iOS Simulator. Use the note button to record this delivery.', 'iOS Simulator में दस्तावेज़ कैमरा उपलब्ध नहीं है। इस डिलीवरी को दर्ज करने के लिए नोट बटन चुनें।'));
       return;
@@ -251,11 +257,12 @@ export function Reconciliation() {
   }
 
   function confirm() {
-    if (!invoice || !fields) return;
+    if (!invoice || !fields || deliverySave.current) return;
     const totalPaise = parseRupees(fields.total);
     const paidPaise = fields.paid.trim() ? parseRupees(fields.paid) : null;
     if (totalPaise === null || resolved.some((entry) => !entry.value)) return;
-    app.saveDelivery({
+    const scan = activeScan.current;
+    const saving = app.saveDelivery({
       voiceNote,
       supplier: fields.supplier.trim(),
       invoiceNumber: fields.invoiceNumber.trim() || null,
@@ -267,8 +274,12 @@ export function Reconciliation() {
       lines: resolved.flatMap((entry) => entry.value ? [entry.value] : []),
       invoiceEvidenceUris: evidenceUris,
     }, evidenceUris, () => {
-      if (activeScanId.current) committedScan.current = true;
+      if (scan) scan.committed = true;
     });
+    deliverySave.current = saving;
+    void saving.finally(() => {
+      deliverySave.current = null;
+    }).catch(() => {});
   }
 
   if (!app.mode) return null;

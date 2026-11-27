@@ -2,12 +2,15 @@
 .agents
 .codex
 .expo
+.pitchdeck-build
+.scratch
 .DS_Store
 node_modules
 ios
 android
 dist
 dist-web
+output
 docs/verification
 *.xcresult
 *.log
